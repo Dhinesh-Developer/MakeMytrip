@@ -1,107 +1,91 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import SignupDialog from "./SignupDialog";
-import { useSelector, useDispatch } from "react-redux";
+import { LogOut, Plane, User } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { LogOut, User } from "lucide-react";
-import { setUser } from "@/store";
+import { clearUser } from "@/store";
 import { useRouter } from "next/navigation";
-
 const Navbar = () => {
   const dispatch = useDispatch();
-  const router = useRouter();
   const user = useSelector((state: any) => state.user.user);
-
-  // ✅ Fix hydration mismatch
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
-
-  // ✅ Avatar first letter logic
-  const avatarChar =
-    user?.firstName?.[0]?.toUpperCase() ||
-    user?.email?.[0]?.toUpperCase() ||
-    "U";
-
-  const handleLogout = () => {
-    dispatch(setUser(null));
-    router.push("/");
+  const router = useRouter();
+  const logout = () => {
+    dispatch(clearUser());
   };
-
-  const goToProfile = () => {
-    router.push("/profile");
-  };
-
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo / Title */}
-        <span className="text-2xl font-bold text-black">
-          Make My Tour
-        </span>
+    <header className=" backdrop-blur-md py-4 sticky top-0 z-50">
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2 text-white">
+          <Plane className="w-8 h-8 text-red-500" />
+          <span className="text-2xl font-bold text-black">MakeMyTour</span>
+        </div>
+        <div className="flex items-center space-x-4">
+          {user ? (
+            <>
+              {user.role === "ADMIN" && (
+                <Button variant="default" onClick={() => router.push("/admin")}>
+                  ADMIN
+                </Button>
+              )}
 
-        {/* Right Section */}
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="rounded-full p-0 hover:bg-transparent"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-black text-white font-semibold">
-                    {avatarChar}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              className="w-56 rounded-xl shadow-lg"
-            >
-              <DropdownMenuLabel className="text-left">
-                <p className="font-semibold capitalize">
-                  {user.firstName}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {user.email}
-                </p>
-              </DropdownMenuLabel>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={goToProfile}
-                className="cursor-pointer"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <SignupDialog />
-        )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user?.firstName?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.firstName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push("/profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => logout()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <SignupDialog
+              trigger={
+                <Button
+                  variant="outline"
+                  className="bg-blue-600  text-white hover:bg-blue-700"
+                >
+                  Sign Up
+                </Button>
+              }
+            />
+          )}
+        </div>
       </div>
     </header>
   );
